@@ -1,0 +1,17 @@
+.page {
+  width: min(100% - var(--page-gutter), var(--content-max-width));
+  margin: var(--page-block-margin) auto;
+  padding: var(--page-padding);
+  border-top: var(--border-accent-width) solid var(--color-accent);
+  border-radius: var(--radius-panel);
+  background: var(--color-surface);
+}
+
+.homeLink {
+  color: var(--color-accent-text);
+}
+
+.homeLink:focus-visible {
+  outline: 0.125rem solid currentColor;
+  outline-offset: 0.25rem;
+}

@@ -10,12 +10,14 @@ Build an airport flight board that demonstrates clear React and reliable async b
 - Inspect the current code, Git state, and prerequisite PRs at session start. Consult optional local `HANDOFF.md` and `PLAN.md` only if present; a clean clone must not require them. A user-assigned deliverable sets that session's scope; discuss meaningful improvements or ambiguities rather than treating the plan as a fixed implementation recipe.
 - Meet every mandatory challenge requirement first, then allow modest improvements that demonstrate mid-senior judgment through clear user value, reliability, accessibility, or maintainability. Keep extras distinct from PDF requirements, explain their benefit and tradeoff, and keep them testable and easy to explain. Avoid speculative features, abstractions, or dependencies; this guidance does not expand the current phase's scope.
 - React + Vite, strict TypeScript, CSS Modules, and pnpm. Keep related flight code and tests in `src/features/flights`; extract shared code only when there is an actual second consumer.
-- Use native `fetch` and React hooks for data loading. Use React Router for page routing and URL search parameters. Do not add fetching libraries, a global store, or a backend; routing is a separate deliverable and is not implemented yet.
+- Use native `fetch` and React hooks for data loading. Use React Router for page routing and URL search parameters. Do not add fetching libraries, a global store, or a backend. App composes routes; pages compose features.
 - Keep data mapping and grouping independent of UI. Preserve accessibility: semantic elements, labelled controls, visible focus, text status labels, and usable narrow-screen layouts.
 
 ## Code structure and style
 
 Before writing or reviewing code, read and follow [.agents/rules/code-style.md](.agents/rules/code-style.md). Treat these rules as acceptance criteria for every code change and review the diff against them before handing work back.
+
+Keep reusable design values in `src/styles/tokens.css` as CSS custom properties and consume them from CSS Modules. Follow the shared rules' Styling section for global defaults, local styles, and theme scope.
 
 ## Flight implementation contract
 

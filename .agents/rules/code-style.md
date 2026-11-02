@@ -25,6 +25,8 @@ src/
       errors/
       utils/
   shared/
+  styles/
+    tokens.css
   styles.css
   test/
 ```
@@ -36,6 +38,13 @@ src/
 - Feature `hooks/` own React request state, lifecycle, timers, cancellation, and latest-request protection. They invoke the API with an `AbortSignal` and stable session context as needed. Request flow is **page → feature hook → feature API → validation/mapping**.
 - Pages compose features; features do not import pages or reach into another feature's internals. `shared/` is only for code with actual consumers across features and must not import feature or page code. Do not create a generic API framework or use shared utilities as a dumping ground.
 - `styles.css` holds global styles. `test/` holds shared test setup only; keep tests beside the feature code they verify.
+
+## Styling
+
+- Define reusable design values as CSS custom properties in `:root` in `src/styles/tokens.css`, imported by `src/styles.css`. Reuse existing tokens before adding new ones.
+- Use descriptive names for shared colors, spacing, typography, radii, and layout values when they are needed. Keep genuinely one-off component values local; do not create a token for every number or a speculative token scale.
+- Keep global defaults and resets in `src/styles.css`. Keep page and component layout and appearance in their colocated CSS Modules, consuming shared tokens with `var(...)`.
+- Preserve the current appearance during styling cleanup unless a visual change is explicitly requested. Keep the single light theme; do not add dark mode, theme frameworks, or styling libraries without explicit scope.
 
 ## Implementation rules
 
