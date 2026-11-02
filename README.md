@@ -31,7 +31,7 @@ If you use another Node version manager, select the version from `.nvmrc`. The g
 | `pnpm test:watch`   | Run tests in watch mode                        |
 | `pnpm check`        | Run all foundation checks                      |
 
-CI runs formatting, lint, types, tests, and build on every PR and on pushes to `main`, using a frozen lockfile. There are no product tests yet: CI and `pnpm check` currently use `--passWithNoTests`. A passing empty suite does not verify application behavior.
+CI runs three jobs on every PR and on pushes to `main`, using a frozen lockfile: **Lint** checks formatting and ESLint, **Test** runs Vitest, and **Build** checks TypeScript and builds the app. There are no product tests yet: CI and `pnpm check` currently use `--passWithNoTests`. A passing empty suite does not verify application behavior.
 
 Vitest, React Testing Library, and jsdom are configured.
 
