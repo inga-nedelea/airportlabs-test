@@ -23,7 +23,7 @@ jobs:
           - check: Lint
             command: pnpm format:check && pnpm lint
           - check: Test
-            command: pnpm test --passWithNoTests
+            command: pnpm test
           - check: Build
             command: pnpm build
     steps:
@@ -34,7 +34,4 @@ jobs:
           node-version-file: .nvmrc
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - name: Foundation test scope
-        if: matrix.check == 'Test'
-        run: echo 'Foundation only - no product tests exist yet. The test runner permits an empty suite until the first flight implementation.' >> "$GITHUB_STEP_SUMMARY"
       - run: ${{ matrix.command }}

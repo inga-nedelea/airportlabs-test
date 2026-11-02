@@ -34,7 +34,7 @@ Keep reusable design values in `src/styles/tokens.css` as CSS custom properties 
 - `nvm use`, then `pnpm install --frozen-lockfile` (Node in `.nvmrc`, pnpm in `package.json`).
 - `pnpm dev` / `pnpm build` / `pnpm preview`.
 - `pnpm format:check`, `pnpm lint`, `pnpm typecheck`, `pnpm test`.
-- `pnpm check` runs all foundation gates. It temporarily permits zero tests; CI explicitly reports that no product tests exist. Remove this allowance from `check` and CI when the first flight tests are added.
+- `pnpm check` runs formatting, lint, typecheck, the flight tests, and build. CI runs Lint, Test, and Build; an empty test suite fails.
 - Use `pnpm format` to format edits. Commit the lockfile when dependencies change.
 
 ## Implementation and verification
