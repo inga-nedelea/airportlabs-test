@@ -4,6 +4,15 @@
   --color-text: #172a3a;
   --color-accent: #087f8c;
   --color-accent-text: #16636c;
+  --color-text-muted: #526573;
+  --color-border: #d4dfe5;
+  --color-success-text: #22613d;
+  --color-success-surface: #e9f4ed;
+  --color-warning-text: #79520b;
+  --color-warning-surface: #fff5dc;
+  --color-warning-border: #d3b56c;
+  --color-danger-text: #a3333b;
+  --color-danger-surface: #fbecee;
 
   --content-max-width: 64rem;
   --page-gutter: 2rem;
