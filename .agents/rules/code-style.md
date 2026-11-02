@@ -4,7 +4,7 @@ These rules are acceptance criteria for every code change. Review the diff again
 
 ## Application structure
 
-Create files and directories when they own implemented functionality; this layout does not require empty scaffolding. A single-screen app may compose its feature directly in `App.tsx` until a page has a real layout responsibility. Pages do not require a router or another dependency.
+Create files and directories when they own implemented functionality; this layout does not require empty scaffolding. Until the routing deliverable is implemented, the starter may compose its feature directly in `App.tsx`. The approved React Router deliverable makes `App.tsx` compose routes: `/` renders `pages/FlightsPage/FlightsPage.tsx`, and unknown paths render a small Not Found page. Pages own screen composition; do not add speculative nested layouts, loaders, or server routing.
 
 ```text
 src/

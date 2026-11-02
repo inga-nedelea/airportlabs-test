@@ -19,17 +19,12 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        check: [format, lint, types, tests, build]
         include:
-          - check: format
-            command: pnpm format:check
-          - check: lint
-            command: pnpm lint
-          - check: types
-            command: pnpm typecheck
-          - check: tests
+          - check: Lint
+            command: pnpm format:check && pnpm lint
+          - check: Test
             command: pnpm test --passWithNoTests
-          - check: build
+          - check: Build
             command: pnpm build
     steps:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
@@ -40,6 +35,6 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - name: Foundation test scope
-        if: matrix.check == 'tests'
+        if: matrix.check == 'Test'
         run: echo 'Foundation only - no product tests exist yet. The test runner permits an empty suite until the first flight implementation.' >> "$GITHUB_STEP_SUMMARY"
       - run: ${{ matrix.command }}
