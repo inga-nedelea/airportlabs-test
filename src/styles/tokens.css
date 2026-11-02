@@ -1,0 +1,14 @@
+:root {
+  --color-background: #f3f6f8;
+  --color-surface: #fff;
+  --color-text: #172a3a;
+  --color-accent: #087f8c;
+  --color-accent-text: #16636c;
+
+  --content-max-width: 64rem;
+  --page-gutter: 2rem;
+  --page-block-margin: clamp(2rem, 8vw, 6rem);
+  --page-padding: clamp(1.5rem, 5vw, 3rem);
+  --border-accent-width: 0.25rem;
+  --radius-panel: 0.5rem;
+}

@@ -1,14 +1,14 @@
 .page {
-  width: min(100% - 2rem, 64rem);
-  margin: clamp(2rem, 8vw, 6rem) auto;
-  padding: clamp(1.5rem, 5vw, 3rem);
-  border-top: 0.25rem solid #087f8c;
-  border-radius: 0.5rem;
-  background: #fff;
+  width: min(100% - var(--page-gutter), var(--content-max-width));
+  margin: var(--page-block-margin) auto;
+  padding: var(--page-padding);
+  border-top: var(--border-accent-width) solid var(--color-accent);
+  border-radius: var(--radius-panel);
+  background: var(--color-surface);
 }
 
 .homeLink {
-  color: #16636c;
+  color: var(--color-accent-text);
 }
 
 .homeLink:focus-visible {

@@ -17,6 +17,8 @@ Build an airport flight board that demonstrates clear React and reliable async b
 
 Before writing or reviewing code, read and follow [.agents/rules/code-style.md](.agents/rules/code-style.md). Treat these rules as acceptance criteria for every code change and review the diff against them before handing work back.
 
+Keep reusable design values in `src/styles/tokens.css` as CSS custom properties and consume them from CSS Modules. Follow the shared rules' Styling section for global defaults, local styles, and theme scope.
+
 ## Flight implementation contract
 
 - Display flight number, destination, status (On Time, Delayed, Cancelled), gate, terminal, and departure time. Map JSONPlaceholder posts separately from UI: `id` to `FL-{id}`, `userId` to terminal, and `title` to destination; derive other fields deterministically. Require positive safe-integer IDs, nonblank titles, and unique post IDs; reject malformed responses as a whole.
