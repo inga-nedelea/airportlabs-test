@@ -8,9 +8,9 @@ This handoff works without the original chat, including in another coding app or
 
 ## Current snapshot — verify before working
 
-- Foundation PR [#1](https://github.com/inga-nedelea/airportlabs-test/pull/1) is open on `chore/project-foundation`; its five checks passed when this handoff was written. Do not assume it remains open or that this branch is still the right starting point.
+- Foundation PR [#1](https://github.com/inga-nedelea/airportlabs-test/pull/1) was verified merged into `main` on 2026-11-02. D1 is implemented on `codex/d1-flight-model`, with PR/review pending; verify its current state before starting D2.
 - Foundation provides a runnable starter, build/lint/format/type tooling, Vitest/React Testing Library setup, and Codex/Claude instructions.
-- Flight data, async behavior, filters, grouping, responsive product UI, product tests, and deployment are not implemented yet.
+- D1 adds `src/features/flights/flightModel.ts`: validated response mapping, simple flight types, deterministic derived fields, and an explicit airport date helper. Async behavior, filters, grouping, responsive product UI, product tests, and deployment are not implemented yet; the app still renders the starter.
 - CI temporarily permits an empty product test suite. This is disclosed, not proof of application correctness; D2 removes the allowance when adding the two async tests.
 - `docs/` holds optional local notes and is gitignored. A clean clone must work without it. Keep it local; shared planning belongs in PLAN.md and this handoff.
 
@@ -23,7 +23,8 @@ The private **Technical Interview Challenge - Frontend Engineer** PDF is the sou
 **Agreed implementation direction:**
 
 - React + Vite, simple strict TypeScript, CSS Modules, pnpm, and one `features/flights` folder keep this single-dashboard project small. Do not introduce Next.js, a backend, a router, a fetching library, or a global store without discussing a concrete need.
-- JSONPlaceholder posts map into validated flight data; derived values are deterministic. English, 24-hour `Europe/Chisinau` display and a session-start airport date keep the schedule stable across refreshes and viewer timezones.
+- JSONPlaceholder posts require positive safe-integer `id`/`userId`, nonblank `title`, and unique IDs; malformed data rejects the whole response, extra fields are ignored, title text is preserved. Mapping and validation are implemented independently of UI.
+- D1 schedules departures in five-minute slots from 06:00 to 23:55 on the session-start `Europe/Chisinau` date, including past departures. Derived status/gate/time depend only on ID; formulas and verification are recorded in PLAN.md. Departure `{ date, minutesAfterMidnight }` represents airport civil time, not a UTC instant. D2 captures `createSessionAirportDate()` once per dashboard session and reuses it on every refresh; D3 formats the minutes directly with a timezone label. Do not parse these values with the viewer's local `Date`.
 - One dashboard-owned `useFlights` hook uses a small reducer. Latest-request-wins applies to every state update; abort superseded requests and retain the guard. Use a 10-second timeout and cleanup on unmount.
 - Keep flights and stale/error feedback during retries until success. Continue automatic retries; Retry now shares refresh logic. Malformed data fails; valid `[]` succeeds and clears the board.
 - Status lives in the URL, defaults to All, and supports reload and Back/Forward. Terminal groups sort by departure time then flight number, hide empty groups, and distinguish empty source data from no filter matches.
@@ -32,6 +33,10 @@ The private **Technical Interview Challenge - Frontend Engineer** PDF is the sou
 - Vercel hosting follows implementation. Review the other candidate's example only after our own implementation is complete.
 
 These choices have reasons, but they are revisitable. Meet mandatory requirements first; modest improvements are welcome when their benefit and cost are clear. Ask one meaningful question at a time with a recommendation where intent is unclear or a prior choice should change. Inspect the brief/repo first so the user is not asked to decide already-specified requirements.
+
+## D1 verification
+
+Temporary Node assertions passed for valid/invalid/empty responses, duplicate IDs, safe-integer boundaries, deterministic and reordered mapping, preserved input, airport midnight, year rollover, and both 2026 DST transitions under UTC, America/Los_Angeles, Asia/Tokyo, and Europe/Chisinau viewer timezones. `pnpm format` and `pnpm check` passed with the pinned runtime. No product tests were added; the Vitest gate still permits zero tests. D2 must add the two agreed async tests and remove that allowance. D1 has no fetch or browser behavior to verify yet.
 
 ## Local setup
 

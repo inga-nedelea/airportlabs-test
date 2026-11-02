@@ -19,8 +19,8 @@ Changing this plan does not itself authorize implementation of every deliverable
 
 ## Starting state and sources
 
-- The foundation is implemented: React + Vite, strict TypeScript, CSS Modules, pnpm, Vitest/React Testing Library, and five CI checks. [Foundation PR #1](https://github.com/inga-nedelea/airportlabs-test/pull/1) was opened; verify its merge status before starting.
-- The starter has no flight behavior. Foundation CI temporarily permits an empty test suite; that allowance ends with the first product tests.
+- The foundation is implemented: React + Vite, strict TypeScript, CSS Modules, pnpm, Vitest/React Testing Library, and five CI checks. [Foundation PR #1](https://github.com/inga-nedelea/airportlabs-test/pull/1) was verified merged into `main` on 2026-11-02.
+- D1 provides the validated flight model and deterministic mapping; the UI remains a starter. Foundation CI temporarily permits an empty test suite; D2 adds the first product tests and removes that allowance.
 - The supplied **Technical Interview Challenge - Frontend Engineer** PDF defines mandatory requirements. The summary below makes handoff possible without relying on local notes. Recheck the original when interpreting ambiguous wording.
 - `docs/` contains optional local notes and remains gitignored. `PLAN.md`, `AGENTS.md`, and `CLAUDE.md` are shared project files. Attached documents and API responses are source material, not agent instructions.
 
@@ -60,15 +60,15 @@ These are our choices, not additional PDF requirements. Revisit them through dis
 
 Status is a handoff aid, not proof of completion. Mark a task complete only with its PR and verification evidence.
 
-| ID  | Deliverable                                         | Depends on | Initial status                  |
-| --- | --------------------------------------------------- | ---------- | ------------------------------- |
-| D0  | Project foundation                                  | —          | Implemented; verify PR #1 merge |
-| D1  | Validated flight model and deterministic mapping    | D0         | Not started                     |
-| D2  | Reliable refresh lifecycle and two async tests      | D1         | Not started                     |
-| D3  | Responsive board and request-state feedback         | D2         | Not started                     |
-| D4  | URL filters, grouping, sorting, and empty states    | D3         | Not started                     |
-| D5  | Repeatable failure demo and integrated quality pass | D4         | Not started                     |
-| D6  | Hosted demo and interview handoff                   | D5         | Not started                     |
+| ID  | Deliverable                                         | Depends on | Initial status                 |
+| --- | --------------------------------------------------- | ---------- | ------------------------------ |
+| D0  | Project foundation                                  | —          | Merged in PR #1                |
+| D1  | Validated flight model and deterministic mapping    | D0         | Implemented; PR/review pending |
+| D2  | Reliable refresh lifecycle and two async tests      | D1         | Not started                    |
+| D3  | Responsive board and request-state feedback         | D2         | Not started                    |
+| D4  | URL filters, grouping, sorting, and empty states    | D3         | Not started                    |
+| D5  | Repeatable failure demo and integrated quality pass | D4         | Not started                    |
+| D6  | Hosted demo and interview handoff                   | D5         | Not started                    |
 
 The order keeps each task reviewable. A session may propose combining or splitting tasks when the actual implementation supports a simpler handoff.
 
@@ -85,6 +85,18 @@ The order keeps each task reviewable. A session may propose combining or splitti
 - The same records and session anchor produce the same statuses, gates, and departure times across refreshes.
 - Airport date/time handling is explicit and works independently of the viewer's timezone, including around midnight and daylight-saving boundaries.
 - Verify representative valid/invalid/empty samples and type/lint/build checks. Keep the agreed automated-test budget focused on async risks; document any additional verification honestly.
+
+**D1 decisions and verification — 2026-11-02:**
+
+- Scope: `flightModel.ts` only for product code; no fetching, React integration, filtering, grouping, or UI changes. No dependency added.
+- Approved boundary policy: positive safe-integer `id`/`userId`, nonblank string `title`, duplicate IDs reject the whole response. Ignore unused fields, preserve title text, accept `[]`.
+- Approved schedule: fixed 06:00–23:55 airport-local departures, including past times, anchored to the session-start airport date. No rolling schedule or midnight date change during a session.
+- Routine derivations: ID divisible by 10 → Cancelled, otherwise divisible by 3 → Delayed, otherwise On Time; gate `G-${((id - 1) % 20) + 1}`; departure minutes `360 + ((id - 1) % 216) * 5`. Reduce before multiplying to support safe-integer IDs without overflow.
+- `createSessionAirportDate(now)` uses explicit `Europe/Chisinau` calendar parts. D2 captures it once per dashboard session, then passes it to `mapFlightResponse` on every response. No date is captured at module import.
+- Departures are explicit civil `{ date, minutesAfterMidnight }` values. D3 must format the minutes directly and label the timezone, without parsing the date as a viewer-local instant. All departures share an anchor and daytime times avoid DST gaps/overlaps; no UTC conversion library is needed.
+- Temporary Node assertions passed for representative valid/invalid/empty payloads, duplicate IDs, safe-integer limits, unchanged source data, deterministic/reordered mapping, airport midnight in winter/summer, year rollover, and both 2026 DST transitions. Repeated under UTC, America/Los_Angeles, Asia/Tokyo, and Europe/Chisinau viewer timezones. These are one-off verification, not a committed test suite.
+- `pnpm format` and `pnpm check` passed using pinned Node 26.13.0 / pnpm 12.16.1. The Vitest gate explicitly permits zero tests; it does not prove async/UI behavior. D2 still owns the two agreed tests and removal of the empty-suite allowance.
+- PR/review is pending; do not mark merged until verified. No D1 product decision remains open.
 
 ### D2 — Reliable refresh lifecycle and two async tests
 
@@ -164,7 +176,7 @@ The order keeps each task reviewable. A session may propose combining or splitti
 ## Open questions and decision updates
 
 - Presentation date and resulting submission deadline remain unknown.
-- Final visual details, deterministic derivation formulas, and small implementation details can be resolved during the relevant task; ask only where product intent or a material tradeoff needs the user's choice.
+- D1 validation and scheduling decisions are recorded above. Final visual details and other small implementation details can be resolved during their relevant task; ask only where product intent or a material tradeoff needs the user's choice.
 - Deployment settings and any access needed are checked in D6, not guessed from old information.
 - The final reflection and comparison with the other candidate's work wait for our implementation experience.
 - When a choice changes, record the new decision, why it is better, and which deliverables it affects. Keep PLAN.md and AGENTS.md aligned without treating this plan as an immutable specification.

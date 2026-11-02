@@ -2,7 +2,7 @@
 
 A frontend interview project built with React, Vite, and strict TypeScript.
 
-**Current status: foundation only.** The app renders a minimal starter page. Flight fetching, filters, grouping, refresh behavior, product tests, and deployment are planned but not implemented.
+**Current status: foundation plus flight model.** D1 adds validated, deterministic mapping independent of the UI. The app still renders the starter page; fetching, filters, grouping, refresh behavior, product tests, and deployment remain planned.
 
 ## Run locally
 
@@ -39,19 +39,27 @@ Vitest, React Testing Library, and jsdom are configured. The later tests will co
 
 ## Structure and decisions
 
-- `src/features/flights` holds the starter and will hold flight UI, its fetching hook, mapping/grouping functions, CSS Modules, and nearby tests.
+- `src/features/flights` holds the starter and `flightModel.ts`; future flight UI, fetching, grouping, CSS Modules, and nearby tests stay here.
 - [AGENTS.md](AGENTS.md) records the core requirements, agreed implementation choices, and agent responsibilities. [CLAUDE.md](CLAUDE.md) imports those same instructions.
 - Optional planning notes in `docs/` stay local and gitignored. They are not needed to run or contribute to a clean clone.
 
 Keep the app client-side with native `fetch` and React hooks. Use local reducer state for the board and the URL for the status filter. Deployment to Vercel follows the flight-board implementation.
 
+## Flight mapping (D1)
+
+`mapFlightResponse(unknown, sessionAirportDate)` validates the entire JSONPlaceholder posts response. IDs and user IDs must be positive safe integers, titles must be nonblank strings, and duplicate IDs reject the response. Extra fields are ignored, titles are preserved verbatim, and `[]` succeeds. The mapping does not mutate its input.
+
+`id` becomes `FL-{id}`, `userId` becomes the numeric terminal, and `title` becomes the destination. IDs divisible by 10 are Cancelled; otherwise those divisible by 3 are Delayed; the rest are On Time. Gates cycle through G-1–G-20. Departures cycle through 216 five-minute slots from 06:00 to 23:55 using `(id - 1) % 216`, so refreshes and record reordering do not change derived values.
+
+`createSessionAirportDate(now)` gets the calendar date in `Europe/Chisinau`, independent of the viewer's timezone. D2 must capture it once when the dashboard session starts and reuse it for every refresh. A departure stores that ISO calendar date plus minutes after midnight as **airport civil time**, not a UTC instant or a string to parse with the viewer's local `Date`. D3 can render hours/minutes directly and label the airport timezone. The fixed daytime schedule avoids missing/repeated local times at DST transitions and includes past departures; it does not roll forward at midnight during a session.
+
 ## AI use and reflection
 
-The candidate selected and challenged the design and implementation choices through discussion. AI generated the foundation code, configuration, and documentation. The candidate has not been represented as manually writing that generated code.
+The candidate selected and challenged the design and implementation choices through discussion. AI generated the foundation code, configuration, and documentation, then the D1 model/mapping and shared documentation updates. The candidate approved duplicate-ID rejection, field validation rules, and the fixed daytime schedule during the D1 discussion. The candidate has not been represented as manually writing that generated code.
 
 One correction to AI output: the initial dependency selection used TypeScript 7.0.2, but the lint check showed that typescript-eslint does not support it. The compiler was changed to TypeScript 6.0.3, the latest compatible stable release, instead of introducing two compiler installations. The candidate also corrected the initial planning approach and selected Vite, pnpm, and a current LTS Node version.
 
-Local frozen installation, peer dependency validation, formatting, lint, type checking, and production build passed. A temporary two-case test verified the React Testing Library/jsdom setup and cleanup, then was removed; it was not product coverage. CI results and subsequent corrections belong in the relevant PR.
+Local frozen installation, peer dependency validation, formatting, lint, type checking, and production build passed. A temporary two-case test verified the React Testing Library/jsdom setup and cleanup, then was removed; it was not product coverage. CI results and subsequent corrections belong in the relevant PR. D1 was also checked with temporary Node assertions for valid/invalid/empty responses, deterministic mapping, input preservation, safe-integer limits, airport midnight, year rollover, and both 2026 DST transitions under UTC, America/Los_Angeles, Asia/Tokyo, and Europe/Chisinau viewer timezones. Those assertions are not committed product tests; the two planned async tests remain D2 work.
 
 **One decision to revisit with more time:** pending experience with the completed implementation. Record a real tradeoff before submission rather than inventing a retrospective during setup.
 
