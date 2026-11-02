@@ -35,8 +35,15 @@ CI runs formatting, lint, types, tests, and build on every PR and on pushes to `
 
 Vitest, React Testing Library, and jsdom are configured.
 
+`pnpm lint` enforces blank lines between logical steps, braces around control-flow bodies, and no nested ternaries. Run `pnpm lint --fix` to apply available fixes, then `pnpm format`.
+
 ## Project structure
 
-- `src/features/flights` contains the flight board and data model.
+- `src/features/flights/components` contains the flight board and its CSS Module.
+- `src/features/flights/types` defines the API and flight types.
+- `src/features/flights/constants` contains airport and schedule values.
+- `src/features/flights/errors` defines typed flight-data errors.
+- `src/features/flights/mapping` transforms API data into flights.
+- `src/features/flights/utils` validates responses and handles airport dates.
 - `src/test/setup.ts` configures the test environment.
 - `.github/workflows/ci.yml` defines the CI checks.
