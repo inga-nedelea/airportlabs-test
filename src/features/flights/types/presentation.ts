@@ -1,8 +1,11 @@
-import type { Flight } from './flight';
+import type { TerminalFlightGroup } from './flight';
 import type { FlightsState } from './requests';
 
 export type FlightBoardProps = {
-  flights: Flight[];
+  scheduleDate: string | undefined;
+  terminalGroups: TerminalFlightGroup[];
+  statusValue: string;
+  changeStatus: (value: string) => void;
 };
 
 export type FlightRequestFeedbackProps = Pick<

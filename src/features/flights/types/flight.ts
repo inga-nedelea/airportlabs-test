@@ -23,3 +23,8 @@ export type Flight = {
   terminal: number;
   departure: AirportDeparture;
 };
+
+export type TerminalFlightGroup = {
+  terminal: number;
+  flights: Flight[];
+};

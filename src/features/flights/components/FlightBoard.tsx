@@ -1,4 +1,10 @@
-import { FLIGHT_STATUSES } from '../constants/flight';
+import { useRef } from 'react';
+import {
+  ALL_FLIGHT_STATUSES,
+  FLIGHT_STATUS_OPTIONS,
+  FLIGHT_STATUSES,
+} from '../constants/flight';
+import type { TerminalFlightGroup } from '../types/flight';
 import type { FlightBoardProps } from '../types/presentation';
 import { formatDepartureTime } from '../utils/formatFlightTime';
 import styles from './FlightBoard.module.css';
@@ -9,23 +15,14 @@ const statusStyles = {
   [FLIGHT_STATUSES.CANCELLED]: styles.cancelled,
 };
 
-export function FlightBoard({ flights }: FlightBoardProps) {
-  const [firstFlight] = flights;
-
-  if (!firstFlight) {
-    return <p className={styles.empty}>No flights available.</p>;
-  }
-
+function TerminalFlights({ terminal, flights }: TerminalFlightGroup) {
   return (
-    <section aria-label="Departing flights" className={styles.board}>
-      <h2 className={styles.heading}>
-        Flight schedule ·{' '}
-        <time dateTime={firstFlight.departure.date}>
-          {firstFlight.departure.date}
-        </time>
-      </h2>
+    <section>
+      <h3 className={styles.terminalHeading}>Terminal {terminal}</h3>
       <table className={styles.table}>
-        <caption className={styles.srOnly}>Departing flights</caption>
+        <caption className={styles.srOnly}>
+          Terminal {terminal} departures
+        </caption>
         <thead>
           <tr>
             <th scope="col">Departure</th>
@@ -67,7 +64,7 @@ export function FlightBoard({ flights }: FlightBoardProps) {
         {flights.map((flight) => (
           <li key={flight.flightNumber} className={styles.card}>
             <div className={styles.cardHeader}>
-              <h3>{flight.flightNumber}</h3>
+              <h4>{flight.flightNumber}</h4>
               <span
                 className={`${styles.status} ${statusStyles[flight.status]}`}
               >
@@ -98,6 +95,67 @@ export function FlightBoard({ flights }: FlightBoardProps) {
           </li>
         ))}
       </ul>
+    </section>
+  );
+}
+
+export function FlightBoard({
+  scheduleDate,
+  terminalGroups,
+  statusValue,
+  changeStatus,
+}: FlightBoardProps) {
+  const statusSelect = useRef<HTMLSelectElement>(null);
+
+  function showAllFlights() {
+    changeStatus(ALL_FLIGHT_STATUSES);
+    statusSelect.current?.focus();
+  }
+
+  return (
+    <section aria-label="Departing flights" className={styles.board}>
+      <div className={styles.header}>
+        <h2 className={styles.heading}>
+          Flight schedule
+          {scheduleDate && (
+            <>
+              {' · '}
+              <time dateTime={scheduleDate}>{scheduleDate}</time>
+            </>
+          )}
+        </h2>
+        <label className={styles.statusFilter}>
+          Status
+          <select
+            ref={statusSelect}
+            value={statusValue}
+            onChange={(event) => changeStatus(event.currentTarget.value)}
+          >
+            <option value={ALL_FLIGHT_STATUSES}>All statuses</option>
+            {FLIGHT_STATUS_OPTIONS.map(({ value, label }) => (
+              <option key={value} value={value}>
+                {label}
+              </option>
+            ))}
+          </select>
+        </label>
+      </div>
+      {!scheduleDate && (
+        <p className={styles.empty} role="status">
+          No flights available.
+        </p>
+      )}
+      {scheduleDate && terminalGroups.length === 0 && (
+        <div className={styles.empty}>
+          <p role="status">No flights match this status.</p>
+          <button type="button" onClick={showAllFlights}>
+            Show all flights
+          </button>
+        </div>
+      )}
+      {terminalGroups.map((group) => (
+        <TerminalFlights key={group.terminal} {...group} />
+      ))}
     </section>
   );
 }
