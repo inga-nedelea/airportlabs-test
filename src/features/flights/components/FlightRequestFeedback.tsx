@@ -1,4 +1,8 @@
-import { FLIGHTS_REFRESH_INTERVAL_MS } from '../constants/requests';
+import {
+  FLIGHTS_REFRESH_INTERVAL_MS,
+  FLIGHT_REQUEST_ERROR_CODES,
+} from '../constants/requests';
+import { FlightRequestError } from '../errors/FlightRequestError';
 import type { FlightRequestFeedbackProps } from '../types/presentation';
 import { formatLastSuccessTime } from '../utils/formatFlightTime';
 import styles from './FlightRequestFeedback.module.css';
@@ -14,6 +18,9 @@ export function FlightRequestFeedback({
   refresh,
 }: FlightRequestFeedbackProps) {
   const hasSuccess = lastSuccessAt !== null;
+  const isSimulatedFailure =
+    error instanceof FlightRequestError &&
+    error.code === FLIGHT_REQUEST_ERROR_CODES.SIMULATED;
   let requestMessage = 'Flight information is up to date.';
 
   if (error) {
@@ -58,6 +65,7 @@ export function FlightRequestFeedback({
                 ? 'Flight information may be stale.'
                 : 'Unable to load flights.'}
             </p>
+            {isSimulatedFailure && <p>{error.message}</p>}
             <p>
               {hasSuccess && 'Showing the last successful information. '}
               Automatic retries will continue.

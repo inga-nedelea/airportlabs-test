@@ -3,6 +3,7 @@ import { act, renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import { FLIGHT_DATA_ERROR_CODES } from '../constants/errors';
 import {
+  FLIGHTS_FAIL_ON_RELOAD_KEY,
   FLIGHTS_REFRESH_INTERVAL_MS,
   FLIGHTS_REQUEST_TIMEOUT_MS,
   FLIGHT_REQUEST_ERROR_CODES,
@@ -40,8 +41,57 @@ beforeEach(() => {
 });
 
 afterEach(() => {
+  window.sessionStorage.removeItem(FLIGHTS_FAIL_ON_RELOAD_KEY);
   vi.unstubAllGlobals();
   vi.useRealTimers();
+});
+
+it('consumes demo failures once across Strict Mode startup and rapid refreshes', async () => {
+  window.sessionStorage.setItem(FLIGHTS_FAIL_ON_RELOAD_KEY, '1');
+
+  const { result } = renderHook(() => useFlights(), { wrapper: StrictMode });
+
+  await act(async () => {});
+
+  expect(fetchMock).not.toHaveBeenCalled();
+  expect(window.sessionStorage.getItem(FLIGHTS_FAIL_ON_RELOAD_KEY)).toBeNull();
+  expect(result.current).toMatchObject({
+    lastSuccessAt: null,
+    isLoading: false,
+    isFailureArmed: false,
+    error: { code: FLIGHT_REQUEST_ERROR_CODES.SIMULATED },
+  });
+
+  const recovery = queueRequest();
+
+  await act(async () =>
+    vi.advanceTimersByTimeAsync(FLIGHTS_REFRESH_INTERVAL_MS),
+  );
+  expect(result.current.error?.code).toBe(FLIGHT_REQUEST_ERROR_CODES.SIMULATED);
+
+  await act(async () => recovery.resolve(jsonResponse(posts)));
+  expect(result.current.error).toBeNull();
+
+  act(() => result.current.armFailure());
+  expect(result.current.isFailureArmed).toBe(true);
+
+  const latest = queueRequest();
+
+  act(() => {
+    result.current.refresh();
+    result.current.refresh();
+  });
+  expect(result.current.isFailureArmed).toBe(false);
+  expect(fetchMock).toHaveBeenCalledTimes(2);
+
+  await act(async () => {});
+  expect(result.current.isLoading).toBe(true);
+  expect(result.current.error).toBeNull();
+  expect(result.current.flights[0]?.destination).toBe('Vienna');
+
+  await act(async () => latest.resolve(jsonResponse([])));
+  expect(result.current.flights).toEqual([]);
+  expect(result.current.error).toBeNull();
 });
 
 it('ignores superseded completions and failures, including Strict Mode cleanup', async () => {

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useReducer, useRef, useState } from 'react';
 import { fetchFlights } from '../api/fetchFlights';
 import {
   FLIGHTS_ACTIONS,
+  FLIGHTS_FAIL_ON_RELOAD_KEY,
   FLIGHTS_REFRESH_INTERVAL_MS,
   FLIGHTS_REQUEST_TIMEOUT_MS,
   FLIGHT_REQUEST_ERROR_CODES,
@@ -41,11 +42,30 @@ function flightsReducer(
   }
 }
 
+function getFailureReloadStorage() {
+  try {
+    const { sessionStorage } = window;
+
+    return sessionStorage.getItem(FLIGHTS_FAIL_ON_RELOAD_KEY) === null
+      ? null
+      : sessionStorage;
+  } catch {
+    return null;
+  }
+}
+
 export function useFlights() {
   const [sessionAirportDate] = useState(createSessionAirportDate);
   const [state, dispatch] = useReducer(flightsReducer, initialState);
+  const [isFailureArmed, setIsFailureArmed] = useState(false);
+  const failNextRequest = useRef(false);
   const activeRequest = useRef<ActiveFlightRequest | null>(null);
   const mounted = useRef(false);
+
+  function armFailure() {
+    failNextRequest.current = true;
+    setIsFailureArmed(true);
+  }
 
   const cancelActiveRequest = useCallback(() => {
     const request = activeRequest.current;
@@ -84,7 +104,20 @@ export function useFlights() {
     activeRequest.current = request;
     dispatch({ type: FLIGHTS_ACTIONS.START });
 
-    void fetchFlights(controller.signal, sessionAirportDate).then(
+    const shouldFail = failNextRequest.current;
+
+    if (shouldFail) {
+      failNextRequest.current = false;
+      setIsFailureArmed(false);
+    }
+
+    const result = shouldFail
+      ? Promise.reject(
+          new FlightRequestError(FLIGHT_REQUEST_ERROR_CODES.SIMULATED),
+        )
+      : fetchFlights(controller.signal, sessionAirportDate);
+
+    void result.then(
       (flights) => {
         if (activeRequest.current !== request || !mounted.current) {
           return;
@@ -120,17 +153,40 @@ export function useFlights() {
   }, [cancelActiveRequest, sessionAirportDate]);
 
   useEffect(() => {
+    let cancelled = false;
+    const failureReloadStorage = getFailureReloadStorage();
+
     mounted.current = true;
-    refresh();
+
+    if (failureReloadStorage === null) {
+      refresh();
+    } else {
+      // Keep the one-shot marker through Strict Mode's discarded setup.
+      queueMicrotask(() => {
+        if (cancelled) {
+          return;
+        }
+
+        failureReloadStorage.removeItem(FLIGHTS_FAIL_ON_RELOAD_KEY);
+        failNextRequest.current = true;
+        refresh();
+      });
+    }
 
     const intervalId = setInterval(refresh, FLIGHTS_REFRESH_INTERVAL_MS);
 
     return () => {
+      cancelled = true;
       mounted.current = false;
       clearInterval(intervalId);
       cancelActiveRequest();
     };
   }, [cancelActiveRequest, refresh]);
 
-  return { ...state, refresh };
+  return {
+    ...state,
+    refresh,
+    isFailureArmed,
+    armFailure,
+  };
 }
