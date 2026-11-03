@@ -1,9 +1,15 @@
-import type { TerminalFlightGroup } from './flight';
+import type { FlightGroup, FlightGroupingOption, FlightStatus } from './flight';
 import type { FlightsState } from './requests';
 
 export type FlightBoardProps = {
   scheduleDate: string | undefined;
-  terminalGroups: TerminalFlightGroup[];
+  groups: FlightGroup[];
+  groupBy: FlightGroupingOption['value'];
+  changeGrouping: (value: string) => void;
+  resultCount: number;
+  statusCounts: Record<FlightStatus, number>;
+  searchValue: string;
+  changeSearch: (value: string) => void;
   statusValue: string;
   changeStatus: (value: string) => void;
 };

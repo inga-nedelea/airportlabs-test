@@ -1,12 +1,17 @@
-import type { Flight, TerminalFlightGroup } from '../types/flight';
+import type {
+  Flight,
+  FlightGroup,
+  FlightGroupingOption,
+} from '../types/flight';
 
-const compareFlightNumbers = new Intl.Collator('en', { numeric: true }).compare;
+const compareIdentifiers = new Intl.Collator('en', { numeric: true }).compare;
 
-function groupFlightsBy<Key>(
+export function groupFlightsBy(
   flights: Flight[],
-  selectKey: (flight: Flight) => Key,
-): Map<Key, Flight[]> {
-  const groups = new Map<Key, Flight[]>();
+  selectKey: (flight: Flight) => string,
+  grouping: FlightGroupingOption,
+): FlightGroup[] {
+  const groups = new Map<string, Flight[]>();
 
   for (const flight of flights) {
     const key = selectKey(flight);
@@ -19,7 +24,13 @@ function groupFlightsBy<Key>(
     }
   }
 
-  return groups;
+  return [...groups]
+    .sort(([first], [second]) => compareIdentifiers(first, second))
+    .map(([key, group]) => ({
+      id: `${grouping.value}-${key}`,
+      label: `${grouping.label} ${key}`,
+      flights: group.sort(compareDepartures),
+    }));
 }
 
 function compareDepartures(first: Flight, second: Flight): number {
@@ -29,19 +40,6 @@ function compareDepartures(first: Flight, second: Flight): number {
 
   return (
     timeDifference ||
-    compareFlightNumbers(first.flightNumber, second.flightNumber)
+    compareIdentifiers(first.flightNumber, second.flightNumber)
   );
-}
-
-export function groupFlightsByTerminal(
-  flights: Flight[],
-): TerminalFlightGroup[] {
-  const groups = groupFlightsBy(flights, (flight) => flight.terminal);
-
-  return [...groups]
-    .sort(([first], [second]) => first - second)
-    .map(([terminal, group]) => ({
-      terminal,
-      flights: group.sort(compareDepartures),
-    }));
 }
