@@ -8,6 +8,14 @@ export const FLIGHT_STATUSES = {
   CANCELLED: 'Cancelled',
 } as const;
 
+export const FLIGHT_STATUS_PARAM = 'status';
+export const ALL_FLIGHT_STATUSES = '';
+export const FLIGHT_STATUS_OPTIONS = [
+  { value: 'on-time', label: FLIGHT_STATUSES.ON_TIME },
+  { value: 'delayed', label: FLIGHT_STATUSES.DELAYED },
+  { value: 'cancelled', label: FLIGHT_STATUSES.CANCELLED },
+] as const;
+
 export const FIRST_DEPARTURE_MINUTES = 6 * 60;
 export const DEPARTURE_INTERVAL_MINUTES = 5;
 // Five-minute slots from 06:00 through 23:55, inclusive.

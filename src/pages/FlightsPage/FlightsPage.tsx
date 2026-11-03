@@ -1,11 +1,13 @@
 import { FlightBoard } from '../../features/flights/components/FlightBoard';
 import { FlightRequestFeedback } from '../../features/flights/components/FlightRequestFeedback';
 import { AIRPORT_TIME_ZONE } from '../../features/flights/constants/flight';
+import { useFlightBoard } from '../../features/flights/hooks/useFlightBoard';
 import { useFlights } from '../../features/flights/hooks/useFlights';
 import styles from './FlightsPage.module.css';
 
 export function FlightsPage() {
   const { flights, isLoading, error, lastSuccessAt, refresh } = useFlights();
+  const flightBoard = useFlightBoard(flights);
 
   return (
     <main className={styles.page}>
@@ -20,7 +22,7 @@ export function FlightsPage() {
         lastSuccessAt={lastSuccessAt}
         refresh={refresh}
       />
-      {lastSuccessAt !== null && <FlightBoard flights={flights} />}
+      {lastSuccessAt !== null && <FlightBoard {...flightBoard} />}
     </main>
   );
 }

@@ -5,10 +5,45 @@
   background: var(--color-surface);
 }
 
-.heading {
-  margin: 0;
+.header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
   padding: 1rem;
+}
+
+.heading,
+.terminalHeading {
+  margin: 0;
   font-size: 1rem;
+}
+
+.terminalHeading {
+  padding: 0.75rem;
+  border-top: 1px solid var(--color-border);
+  color: var(--color-accent-text);
+  overflow-wrap: anywhere;
+}
+
+.statusFilter {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 700;
+}
+
+.statusFilter select,
+.empty button {
+  min-height: 2.75rem;
+  padding: 0.375rem 0.75rem;
+  border: 1px solid var(--color-accent-text);
+  border-radius: var(--radius-panel);
+  color: var(--color-text);
+  background: var(--color-surface);
+  font: inherit;
+  cursor: pointer;
 }
 
 .table {
@@ -126,7 +161,7 @@
   gap: 0.5rem;
 }
 
-.cardHeader h3 {
+.cardHeader h4 {
   margin: 0;
   font-size: 1rem;
 }
@@ -154,11 +189,18 @@
 }
 
 .empty {
+  margin: 0;
   padding: 2rem 1rem;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-panel);
-  background: var(--color-surface);
+  border-top: 1px solid var(--color-border);
   text-align: center;
+}
+
+.empty p {
+  margin: 0 0 0.75rem;
+}
+
+.empty button:hover {
+  text-decoration: underline;
 }
 
 .srOnly {
