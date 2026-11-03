@@ -14,3 +14,8 @@ export type FlightRequestFeedbackProps = Pick<
 > & {
   refresh: () => void;
 };
+
+export type FlightDemoControlsProps = {
+  isFailureArmed: boolean;
+  armFailure: () => void;
+};
