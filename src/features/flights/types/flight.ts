@@ -1,4 +1,7 @@
-import type { FLIGHT_STATUSES } from '../constants/flight';
+import type {
+  FLIGHT_GROUPING_OPTIONS,
+  FLIGHT_STATUSES,
+} from '../constants/flight';
 
 export type FlightStatus =
   (typeof FLIGHT_STATUSES)[keyof typeof FLIGHT_STATUSES];
@@ -24,7 +27,10 @@ export type Flight = {
   departure: AirportDeparture;
 };
 
-export type TerminalFlightGroup = {
-  terminal: number;
+export type FlightGroupingOption = (typeof FLIGHT_GROUPING_OPTIONS)[number];
+
+export type FlightGroup = {
+  id: string;
+  label: string;
   flights: Flight[];
 };

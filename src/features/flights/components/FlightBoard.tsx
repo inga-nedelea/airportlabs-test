@@ -1,10 +1,11 @@
-import { useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   ALL_FLIGHT_STATUSES,
+  FLIGHT_GROUPING_OPTIONS,
   FLIGHT_STATUS_OPTIONS,
   FLIGHT_STATUSES,
 } from '../constants/flight';
-import type { TerminalFlightGroup } from '../types/flight';
+import type { FlightGroup } from '../types/flight';
 import type { FlightBoardProps } from '../types/presentation';
 import { formatDepartureTime } from '../utils/formatFlightTime';
 import styles from './FlightBoard.module.css';
@@ -15,14 +16,14 @@ const statusStyles = {
   [FLIGHT_STATUSES.CANCELLED]: styles.cancelled,
 };
 
-function TerminalFlights({ terminal, flights }: TerminalFlightGroup) {
+function FlightGroupSection({ id, label, flights }: FlightGroup) {
   return (
     <section>
-      <h3 className={styles.terminalHeading}>Terminal {terminal}</h3>
+      <h3 className={styles.groupHeading} id={id} tabIndex={-1}>
+        {label}
+      </h3>
       <table className={styles.table}>
-        <caption className={styles.srOnly}>
-          Terminal {terminal} departures
-        </caption>
+        <caption className={styles.srOnly}>{label} departures</caption>
         <thead>
           <tr>
             <th scope="col">Departure</th>
@@ -101,11 +102,60 @@ function TerminalFlights({ terminal, flights }: TerminalFlightGroup) {
 
 export function FlightBoard({
   scheduleDate,
-  terminalGroups,
+  groups,
+  groupBy,
+  changeGrouping,
+  resultCount,
+  statusCounts,
+  searchValue,
+  changeSearch,
   statusValue,
   changeStatus,
 }: FlightBoardProps) {
+  const searchInput = useRef<HTMLInputElement>(null);
   const statusSelect = useRef<HTMLSelectElement>(null);
+  const heading = useRef<HTMLHeadingElement>(null);
+  const toolbar = useRef<HTMLDivElement>(null);
+  const jumpLinks = useRef<HTMLElement>(null);
+  const [showBackToTop, setShowBackToTop] = useState(false);
+  const hasSearch = searchValue.trim().length > 0;
+  const visibleStatuses = FLIGHT_STATUS_OPTIONS.filter(
+    ({ value }) => statusValue === ALL_FLIGHT_STATUSES || value === statusValue,
+  );
+
+  useEffect(() => {
+    const nav = jumpLinks.current;
+    const controls = toolbar.current;
+
+    if (!nav || !controls) {
+      return;
+    }
+
+    const updateBackToTop = () => {
+      const visibleTop = Math.max(0, controls.getBoundingClientRect().bottom);
+
+      setShowBackToTop(nav.getBoundingClientRect().bottom < visibleTop);
+    };
+
+    updateBackToTop();
+    window.addEventListener('scroll', updateBackToTop, { passive: true });
+    window.addEventListener('resize', updateBackToTop);
+
+    return () => {
+      window.removeEventListener('scroll', updateBackToTop);
+      window.removeEventListener('resize', updateBackToTop);
+    };
+  }, [groups]);
+
+  function backToTop() {
+    heading.current?.focus({ preventScroll: true });
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  }
+
+  function clearSearch() {
+    changeSearch('');
+    searchInput.current?.focus();
+  }
 
   function showAllFlights() {
     changeStatus(ALL_FLIGHT_STATUSES);
@@ -114,48 +164,120 @@ export function FlightBoard({
 
   return (
     <section aria-label="Departing flights" className={styles.board}>
-      <div className={styles.header}>
-        <h2 className={styles.heading}>
-          Flight schedule
-          {scheduleDate && (
-            <>
-              {' · '}
-              <time dateTime={scheduleDate}>{scheduleDate}</time>
-            </>
-          )}
-        </h2>
-        <label className={styles.statusFilter}>
-          Status
-          <select
-            ref={statusSelect}
-            value={statusValue}
-            onChange={(event) => changeStatus(event.currentTarget.value)}
-          >
-            <option value={ALL_FLIGHT_STATUSES}>All statuses</option>
-            {FLIGHT_STATUS_OPTIONS.map(({ value, label }) => (
-              <option key={value} value={value}>
-                {label}
-              </option>
-            ))}
-          </select>
-        </label>
+      <h2 className={styles.heading} ref={heading} tabIndex={-1}>
+        Flight schedule
+        {scheduleDate && (
+          <>
+            {' · '}
+            <time dateTime={scheduleDate}>{scheduleDate}</time>
+          </>
+        )}
+      </h2>
+      <div className={styles.toolbar} ref={toolbar}>
+        <div className={styles.filters}>
+          <label className={styles.filter}>
+            Search flights
+            <input
+              ref={searchInput}
+              type="search"
+              placeholder="Flight number or destination"
+              value={searchValue}
+              onChange={(event) => changeSearch(event.currentTarget.value)}
+            />
+          </label>
+          <label className={styles.filter}>
+            Status
+            <select
+              ref={statusSelect}
+              value={statusValue}
+              onChange={(event) => changeStatus(event.currentTarget.value)}
+            >
+              <option value={ALL_FLIGHT_STATUSES}>All statuses</option>
+              {FLIGHT_STATUS_OPTIONS.map(({ value, label }) => (
+                <option key={value} value={value}>
+                  {label}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className={styles.filter}>
+            Group by
+            <select
+              value={groupBy}
+              onChange={(event) => changeGrouping(event.currentTarget.value)}
+            >
+              {FLIGHT_GROUPING_OPTIONS.map(({ value, label }) => (
+                <option key={value} value={value}>
+                  {label}
+                </option>
+              ))}
+            </select>
+          </label>
+        </div>
+        <div className={styles.resultSummary}>
+          <p className={styles.srOnly} role="status">
+            {resultCount} {resultCount === 1 ? 'flight' : 'flights'} found
+          </p>
+          {visibleStatuses.map(({ label }) => (
+            <span
+              key={label}
+              className={`${styles.status} ${statusStyles[label]}`}
+            >
+              {statusCounts[label]} {label}
+            </span>
+          ))}
+        </div>
       </div>
+      {groups.length > 0 && (
+        <nav
+          aria-label="Jump to flight group"
+          className={styles.jumpLinks}
+          ref={jumpLinks}
+        >
+          <span>Jump to</span>
+          {groups.map(({ id, label }) => (
+            <a key={id} href={`#${id}`}>
+              {label}
+            </a>
+          ))}
+        </nav>
+      )}
       {!scheduleDate && (
         <p className={styles.empty} role="status">
           No flights available.
         </p>
       )}
-      {scheduleDate && terminalGroups.length === 0 && (
+      {scheduleDate && groups.length === 0 && (
         <div className={styles.empty}>
-          <p role="status">No flights match this status.</p>
-          <button type="button" onClick={showAllFlights}>
-            Show all flights
-          </button>
+          <p>
+            {hasSearch
+              ? 'No flights match your search.'
+              : 'No flights match this status.'}
+          </p>
+          {hasSearch ? (
+            <button type="button" onClick={clearSearch}>
+              Clear search
+            </button>
+          ) : (
+            <button type="button" onClick={showAllFlights}>
+              Show all flights
+            </button>
+          )}
         </div>
       )}
-      {terminalGroups.map((group) => (
-        <TerminalFlights key={group.terminal} {...group} />
+      {groups.map((group) => (
+        <FlightGroupSection key={group.id} {...group} />
       ))}
+      {groups.length > 0 && showBackToTop && (
+        <button
+          type="button"
+          className={styles.backToTop}
+          aria-label="Back to top"
+          onClick={backToTop}
+        >
+          <span aria-hidden="true">↑</span>
+        </button>
+      )}
     </section>
   );
 }

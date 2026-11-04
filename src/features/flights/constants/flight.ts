@@ -16,6 +16,13 @@ export const FLIGHT_STATUS_OPTIONS = [
   { value: 'cancelled', label: FLIGHT_STATUSES.CANCELLED },
 ] as const;
 
+export const FLIGHT_SEARCH_PARAM = 'q';
+export const FLIGHT_GROUPING_PARAM = 'groupBy';
+export const FLIGHT_GROUPING_OPTIONS = [
+  { value: 'terminal', label: 'Terminal' },
+  { value: 'gate', label: 'Gate' },
+] as const;
+
 export const FIRST_DEPARTURE_MINUTES = 6 * 60;
 export const DEPARTURE_INTERVAL_MINUTES = 5;
 // Five-minute slots from 06:00 through 23:55, inclusive.
